@@ -1,3 +1,5 @@
+import json
+from collections import defaultdict
 import numpy as np
 
 
@@ -9,9 +11,35 @@ class Model:
         self.n_state = prob_matrix.shape[0]        
         if prob_matrix.shape != (self.n_state, self.n_state):
             raise ValueError('shape of probability matrix must be (n x n)')
+        # TODO: do more validation
 
     def simulate(self, states, time):
         return states * self.mat ** time
+
+    def dump(self, fp):
+        """Dump the model into file-like object `fp`"""
+        mat = defaultdict(dict)
+        for i in range(self.n_state):
+            for j in range(self.n_state):
+                if self.mat[i, j] > 0:
+                    mat[i][j] = self.mat[i, j]
+        obj = {
+            '_note': 'dumped Markov model',
+            'n_state': self.n_state,
+            'transition_matrix': mat,
+        }
+        json.dump(obj, fp, indent=2)
+
+    @staticmethod
+    def load(fp):
+        """Load the model from file-like object `fp`"""        
+        obj = json.load(fp)
+        n = obj['n_state']
+        mat = np.zeros([n, n])
+        for i, cols in obj['transition_matrix'].items():
+            for j, p in cols.items():
+                mat[int(i), int(j)] = p
+        return Model(mat)
 
 
 class SimpleModel(Model):
