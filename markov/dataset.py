@@ -36,7 +36,7 @@ def load_inspect_log(path: str, date_format='%Y-%m-%d') -> ([Record], int):
             if not sid:
                 raise ValueError(f'blank ID in row {csv.line_num}')
             if not state or not date:
-                print(f'In row {csv.line_num}, {id} '
+                print(f'In row {csv.line_num}, {sid} '
                       'has blank state or time, ignored.', file=sys.stderr)
                 continue
             date = datetime.strptime(date, date_format)
