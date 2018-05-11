@@ -28,16 +28,21 @@ def build_simple_model(n_state: int, records: [Record]):
     init = np.array([0.5] * n_params)
     bounds = [(0, 1)] * n_params
     result = optimize.minimize(loss, init, bounds=bounds)
-    if result.success:
-        return SimpleModel(result.x), result
-    else:
+    if not result.success:
         return None, result
+    return SimpleModel(result.x), result
 
 
 def validate_model(model: Model, records: [Record]):
     time_states, final_states = _prepare_validate(model.n_state, records)
     expect = model.simulate(time_states)
-    variance = np.sum((final_states - expect) ** 2)
+    diff = final_states - expect
+    var = np.sum(diff ** 2)
+    std = np.sqrt(var)
+    err = std / np.sum(expect) * 100
+    np.set_printoptions(precision=2)
     print(f"Expection: {expect}")
     print(f"Actual:    {final_states}")
-    print(f"Variance:  {variance}")
+    print(f"Variance:  {var:.3f}")
+    print(f"StdDev:    {std:.3f}")
+    print(f"Error:     {err:.3f}%")
