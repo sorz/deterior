@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from datetime import datetime
 import numpy as np
 
 
@@ -8,10 +9,12 @@ class Model:
         """Build a model by given probability matrix.
         """
         self.mat = prob_matrix
-        self.n_state = prob_matrix.shape[0]        
+        self.n_state = prob_matrix.shape[0]
         if prob_matrix.shape != (self.n_state, self.n_state):
             raise ValueError('shape of probability matrix must be (n x n)')
-        # TODO: do more validation
+        for i in range(self.n_state):
+            if not 0.999999 < np.sum(self.mat[i]) < 1.000001:
+                raise ValueError(f'sum of row {i} in probability matrix != 1')
 
     def simulate(self, states, time):
         return states * self.mat ** time
@@ -25,6 +28,7 @@ class Model:
                     mat[i][j] = self.mat[i, j]
         obj = {
             '_note': 'dumped Markov model',
+            '_saved_at': datetime.now().isoformat(),
             'n_state': self.n_state,
             'transition_matrix': mat,
         }
@@ -32,7 +36,7 @@ class Model:
 
     @staticmethod
     def load(fp):
-        """Load the model from file-like object `fp`"""        
+        """Load the model from file-like object `fp`"""
         obj = json.load(fp)
         n = obj['n_state']
         mat = np.zeros([n, n])
@@ -46,10 +50,10 @@ class SimpleModel(Model):
 
     def __init__(self, probs):
         """Build a n-state model by given parameters.
-        
+
         `probs` is a list of probability of changing to the next state.
         Its length is total states of this model minus one.
-        """ 
+        """
         if not all(0 <= p <= 1.000001 for p in probs):
             raise ValueError('each p in probs must between 0 and 1')
 
