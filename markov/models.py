@@ -1,11 +1,14 @@
 import json
 from collections import defaultdict
 from datetime import datetime
+from typing import Dict
 import numpy as np
 
 
+TimeStates =  Dict[int, np.ndarray]
+
 class Model:
-    def __init__(self, prob_matrix):
+    def __init__(self, prob_matrix: np.matrix):
         """Build a model by given probability matrix.
         """
         self.mat = prob_matrix
@@ -16,8 +19,14 @@ class Model:
             if not 0.999999 < np.sum(self.mat[i]) < 1.000001:
                 raise ValueError(f'sum of row {i} in probability matrix != 1')
 
-    def simulate(self, states, time):
-        return states * self.mat ** time
+    def simulate(self, time_states: TimeStates) -> np.ndarray:
+        """Given times and initial state vectors, return expectation of final
+        states.
+        """
+        exp = np.mat(np.zeros(self.n_state))
+        for time, states in time_states.items():
+            exp += states * self.mat ** time
+        return np.array(exp)[0]
 
     def dump(self, fp):
         """Dump the model into file-like object `fp`"""
@@ -39,7 +48,7 @@ class Model:
         """Load the model from file-like object `fp`"""
         obj = json.load(fp)
         n = obj['n_state']
-        mat = np.zeros([n, n])
+        mat = np.mat(np.zeros([n, n]))
         for i, cols in obj['transition_matrix'].items():
             for j, p in cols.items():
                 mat[int(i), int(j)] = p
