@@ -51,7 +51,11 @@ def _get_args():
         help='A CSV file that contains inspection records'
     )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    if not args.task:
+        parser.print_help()
+        sys.exit(1)
+    return args
 
 
 def main():

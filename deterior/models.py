@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Dict, TextIO
 import numpy as np
 
+from . import __version__ as version
+
 
 TimeStates =  Dict[int, np.ndarray]
 
@@ -36,7 +38,7 @@ class Model:
                 if self.mat[i, j] > 0:
                     mat[i][j] = self.mat[i, j]
         obj = {
-            '_note': 'Model dumped by Deterior',
+            '_note': f'Model dumped by Deterior v{version}',
             '_saved_at': datetime.now().isoformat(),
             'n_state': self.n_state,
             'transition_matrix': mat,
