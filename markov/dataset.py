@@ -1,6 +1,7 @@
 from collections import namedtuple, defaultdict
 from csv import DictReader
 from datetime import datetime
+from typing import TextIO
 import sys
 
 
@@ -25,22 +26,22 @@ def load_transit_log(path: str) -> ([Record], int):
     return records, max_state
 
 
-def load_inspect_log(path: str, date_format='%Y-%m-%d') -> ([Record], int):
+def load_inspect_log(csvfile: TextIO, date_format='%Y-%m-%d') \
+        -> ([Record], int):
     inpsects = []
-    with open(path, newline='') as csv:
-        csv = DictReader(csv)
-        for row in csv:
-            sid = row[COLUMN_ID]
-            state = row[COLUMN_S0]
-            date = row[COLUMN_TIME]
-            if not sid:
-                raise ValueError(f'blank ID in row {csv.line_num}')
-            if not state or not date:
-                print(f'In row {csv.line_num}, {sid} '
-                      'has blank state or time, ignored.', file=sys.stderr)
-                continue
-            date = datetime.strptime(date, date_format)
-            inpsects.append(Inspect(sid, state, date))
+    csv = DictReader(csvfile)
+    for row in csv:
+        sid = row[COLUMN_ID]
+        state = row[COLUMN_S0]
+        date = row[COLUMN_TIME]
+        if not sid:
+            raise ValueError(f'blank ID in row {csv.line_num}')
+        if not state or not date:
+            print(f'In row {csv.line_num}, {sid} '
+                  'has blank state or time, ignored.', file=sys.stderr)
+            continue
+        date = datetime.strptime(date, date_format)
+        inpsects.append(Inspect(sid, state, date))
     print(f'{len(inpsects)} inspection records loaded')
     return _inpsects_to_records(inpsects)
 
