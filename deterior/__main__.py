@@ -8,7 +8,7 @@ from .models import Model
 
 def _get_args():
     parser = ArgumentParser(
-        description='Equipment Deterioration Modeling Tool'
+        description='Deterior - Equipment Deterioration Modeling Tools'
     )
     subparsers = parser.add_subparsers(
         title='tasks',

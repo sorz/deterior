@@ -1,14 +1,14 @@
 import json
 from collections import defaultdict
 from datetime import datetime
-from typing import Dict
+from typing import Dict, TextIO
 import numpy as np
 
 
 TimeStates =  Dict[int, np.ndarray]
 
 class Model:
-    def __init__(self, prob_matrix: np.matrix):
+    def __init__(self, prob_matrix: np.matrix) -> None:
         """Build a model by given probability matrix.
         """
         self.mat = prob_matrix
@@ -28,7 +28,7 @@ class Model:
             exp += states * self.mat ** time
         return np.array(exp)[0]
 
-    def dump(self, fp):
+    def dump(self, fp: TextIO) -> None:
         """Dump the model into file-like object `fp`"""
         mat = defaultdict(dict)
         for i in range(self.n_state):
@@ -36,7 +36,7 @@ class Model:
                 if self.mat[i, j] > 0:
                     mat[i][j] = self.mat[i, j]
         obj = {
-            '_note': 'dumped Markov model',
+            '_note': 'Model dumped by Deterior',
             '_saved_at': datetime.now().isoformat(),
             'n_state': self.n_state,
             'transition_matrix': mat,
@@ -44,7 +44,7 @@ class Model:
         json.dump(obj, fp, indent=2)
 
     @staticmethod
-    def load(fp):
+    def load(fp: TextIO):
         """Load the model from file-like object `fp`"""
         obj = json.load(fp)
         n = obj['n_state']
@@ -57,7 +57,7 @@ class Model:
 
 class SimpleModel(Model):
 
-    def __init__(self, probs):
+    def __init__(self, probs) -> None:
         """Build a n-state model by given parameters.
 
         `probs` is a list of probability of changing to the next state.
