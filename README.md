@@ -9,7 +9,7 @@ Equipment Deterioration Modeling Tools
   
 - Python `pip` tool
 
-For Windows, download the lastest version of Python from
+For Windows, download the latest version of Python from
 [python.org](https://python.org), `pip` tool is included by default.
 
 For Linux, most distros have Python installed by default, but please

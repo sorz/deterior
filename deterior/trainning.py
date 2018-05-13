@@ -41,7 +41,7 @@ def validate_model(model: Model, records: [Record]):
     std = np.sqrt(var)
     err = std / np.sum(expect) * 100
     np.set_printoptions(precision=2)
-    print(f"Expection: {expect}")
+    print(f"Exception: {expect}")
     print(f"Actual:    {final_states}")
     print(f"Variance:  {var:.3f}")
     print(f"StdDev:    {std:.3f}")
