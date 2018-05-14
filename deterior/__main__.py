@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, FileType
 from io import TextIOWrapper
 import sys
+import matplotlib.pyplot as plt
 
 from .dataset import DataSetReader, Record
 from .trainning import build_simple_model, validate_model
@@ -41,22 +42,49 @@ def _get_args():
         help='where to save the model'
     )
 
+    model = dict(
+        metavar='model.json',
+        type=FileType(encoding='utf-8'),
+        help="the input model"
+    )
+
     validate = subparsers.add_parser(
         'validate',
         help='validate a model by comparing its output with real '
              'inspection records'
     )
-    validate.add_argument(
-        'model',
-        metavar='model.json',
-        type=FileType(encoding='utf-8'),
-        help='the model to verify'
-    )
+    validate.add_argument('model', **model)
     validate.add_argument(
         'dataset',
         metavar='dataset.csv/.xlsx',
         type=FileType(encoding='utf-8'),
         help='a CSV file that contains inspection records'
+    )
+
+    lifecurve = subparsers.add_parser(
+        'lifecurve',
+        help='plot life curve for a given model',
+    )
+    lifecurve.add_argument('model', **model)
+    lifecurve.add_argument(
+        '-s', '--state',
+        metavar='N', type=int, default=0,
+        help='initial state, default to the first state "0"',
+    )
+    lifecurve.add_argument(
+        '--from',
+        metavar='T0', dest='start', type=int, default=0,
+        help='start time of the simulation',
+    )
+    lifecurve.add_argument(
+        '--to',
+        metavar='T1', dest='stop', type=int, required=True,
+        help='end time of the simulation',
+    )
+    lifecurve.add_argument(
+        '--step',
+        metavar='S', type=int, default=0,
+        help='time step, the time interval between two simulations'
     )
 
     args = parser.parse_args()
@@ -72,6 +100,8 @@ def main():
         task_build(args)
     elif args.task == 'validate':
         task_validate(args)
+    elif args.task == 'lifecurve':
+        task_lifecurve(args)
 
 
 def _get_records(args) -> ([Record], int):
@@ -89,7 +119,6 @@ def _get_records(args) -> ([Record], int):
 
 
 def task_build(args):
-    # TODO: add data format args
     records, n_state = _get_records(args)
     model, result = build_simple_model(n_state, records)
     # TODO: formating result
@@ -108,6 +137,22 @@ def task_validate(args):
               'dataset.', file=sys.stderr)
         sys.exit(1)
     validate_model(model, records)
+
+
+def task_lifecurve(args):
+    model = Model.load(args.model)
+    curve = model.simulate_curve(
+        args.state, args.start, args.stop, args.step
+    )
+    plt.title('Life curve')
+    plt.xlabel('Time')
+    plt.ylabel('Probability')
+    plt.grid(True)
+    xs = list(range(args.start, args.stop, args.step))
+    for i in range(args.state, model.n_state):
+        plt.plot(xs, curve[:,i], label=f'State {i}')
+    plt.legend()
+    plt.show()
 
 if __name__ == '__main__':
     main()

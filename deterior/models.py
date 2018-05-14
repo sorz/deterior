@@ -30,6 +30,19 @@ class Model:
             exp += states * self.mat ** time
         return np.array(exp)[0]
 
+    def simulate_curve(self,
+                       init_state: int,
+                       start: int, stop: int, step: int) -> np.ndarray:
+        mat = self.mat ** start
+        init = np.zeros(self.n_state)
+        init[init_state] = 1
+        rows = len(range(start, stop, step))
+        exps = np.zeros([rows, self.n_state])
+        for i in range(rows):
+            exps[i] = init * mat
+            mat *= self.mat ** step
+        return exps
+
     def dump(self, fp: TextIO) -> None:
         """Dump the model into file-like object `fp`"""
         mat = defaultdict(dict)
