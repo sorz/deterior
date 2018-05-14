@@ -86,6 +86,13 @@ def _get_args():
         metavar='S', type=int, default=0,
         help='time step, the time interval between two simulations'
     )
+    lifecurve.add_argument(
+        '-w', '--save-to',
+        dest='output',
+        metavar='figure.png',
+        type=FileType('wb'),
+        help='save figure as image file instead of showing on pop-up window'
+    )
 
     args = parser.parse_args()
     if not args.task:
@@ -152,7 +159,12 @@ def task_lifecurve(args):
     for i in range(args.state, model.n_state):
         plt.plot(xs, curve[:,i], label=f'State {i}')
     plt.legend()
-    plt.show()
+    if args.output:
+        plt.savefig(args.output)
+        print(f'Figure saved as {args.output.name}')
+    else:
+        plt.show()
+
 
 if __name__ == '__main__':
     main()
