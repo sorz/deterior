@@ -1,7 +1,8 @@
 from argparse import ArgumentParser, FileType
+from io import TextIOWrapper
 import sys
 
-from .dataset import load_inspect_log
+from .dataset import DataSetReader, Record
 from .trainning import build_simple_model, validate_model
 from .models import Model
 
@@ -10,45 +11,52 @@ def _get_args():
     parser = ArgumentParser(
         description='Deterior - Equipment Deterioration Modeling Tools'
     )
+    parser.add_argument(
+        '-f', '--dataset-format',
+        metavar='format.ini',
+        dest='format',
+        type=FileType('r', encoding='utf-8'),
+        help='specify the format configuration for input dataset',
+    )
     subparsers = parser.add_subparsers(
         title='tasks',
         dest='task',
-        help='Task that you want perform'
+        help='task that you want perform'
     )
 
     build = subparsers.add_parser(
         'build',
-        help='Build model from inspection records'
+        help='build model from inspection records'
     )
     build.add_argument(
         'dataset',
-        metavar='dataset.csv',
-        type=FileType(encoding='utf-8'),
-        help="A CSV file that contains inspection records"
+        metavar='dataset.csv/.xlsx',
+        type=FileType('rb'),
+        help="a CSV file that contains inspection records"
     )
     build.add_argument(
         'model',
         metavar='output.json',
         type=FileType('w', encoding='utf-8'),
-        help='Where to save the model'
+        help='where to save the model'
     )
 
     validate = subparsers.add_parser(
         'validate',
-        help='Validate a model by comparing its output with real '
+        help='validate a model by comparing its output with real '
              'inspection records'
     )
     validate.add_argument(
         'model',
         metavar='model.json',
         type=FileType(encoding='utf-8'),
-        help='The model to verify'
+        help='the model to verify'
     )
     validate.add_argument(
         'dataset',
-        metavar='dataset.csv',
+        metavar='dataset.csv/.xlsx',
         type=FileType(encoding='utf-8'),
-        help='A CSV file that contains inspection records'
+        help='a CSV file that contains inspection records'
     )
 
     args = parser.parse_args()
@@ -66,9 +74,23 @@ def main():
         task_validate(args)
 
 
+def _get_records(args) -> ([Record], int):
+    reader = DataSetReader(args.format)
+    if args.dataset.name.endswith('.csv'):
+        csvfile = TextIOWrapper(args.dataset, 'utf-8')
+        return reader.load_csv(csvfile)
+    elif args.dataset.name.endswith('.xlsx'):
+        return reader.load_xls(args.dataset)
+
+    print(f'Unknown file type: {args.dataset.name}, '
+          'please rename its suffix to either .csv or .xlsx.',
+          file=sys.stderr)
+    sys.exit(1)
+
+
 def task_build(args):
     # TODO: add data format args
-    records, n_state = load_inspect_log(args.dataset)
+    records, n_state = _get_records(args)
     model, result = build_simple_model(n_state, records)
     # TODO: formating result
     print(result)
@@ -79,8 +101,8 @@ def task_build(args):
 
 def task_validate(args):
     # TODO: handle load error
+    records, n_state = _get_records(args)
     model = Model.load(args.model)
-    records, n_state = load_inspect_log(args.dataset)
     if n_state != model.n_state:
         print(f'Cannot verify {model.n_state}-state model on {n_state}-state '
               'dataset.', file=sys.stderr)
