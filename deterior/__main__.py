@@ -21,27 +21,28 @@ def _get_args() -> Namespace:
         help='task that you want perform'
     )
 
+    model = dict(
+        metavar='model.json',
+        type=FileType(encoding='utf-8'),
+        help="the input model"
+    )
+    dataset = dict(
+        metavar='dataset.csv',
+        type=FileType('rb'),
+        help='a comma-separated values (.csv) or Microsoft Excel (.xlsx) file '
+             'that contains inspection records'
+    )
+
     build = subparsers.add_parser(
         'build',
         help='build model from inspection records'
     )
-    build.add_argument(
-        'dataset',
-        metavar='dataset.csv/.xlsx',
-        type=FileType('rb'),
-        help="a CSV file that contains inspection records"
-    )
+    build.add_argument('dataset', **dataset)
     build.add_argument(
         'model',
         metavar='output.json',
         type=FileType('w', encoding='utf-8'),
         help='where to save the model'
-    )
-
-    model = dict(
-        metavar='model.json',
-        type=FileType(encoding='utf-8'),
-        help="the input model"
     )
 
     validate = subparsers.add_parser(
@@ -50,12 +51,7 @@ def _get_args() -> Namespace:
              'inspection records'
     )
     validate.add_argument('model', **model)
-    validate.add_argument(
-        'dataset',
-        metavar='dataset.csv/.xlsx',
-        type=FileType(encoding='utf-8'),
-        help='a CSV file that contains inspection records'
-    )
+    validate.add_argument('dataset', **dataset)
 
     lifecurve = subparsers.add_parser(
         'lifecurve',
