@@ -43,7 +43,6 @@ class DataSetReader:
             if isinstance(date, str):
                 date = datetime.strptime(date, self.time_format)
             inpsects.append(Inspect(sid, state, date))
-        print(f'{len(inpsects)} inspection records loaded')
         return _inpsects_to_records(inpsects)
 
     def load_csv(self, csvfile: TextIO) -> ([Record], int):

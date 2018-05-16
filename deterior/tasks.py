@@ -12,24 +12,33 @@ def _get_records(args) -> ([Record], int):
     reader = DataSetReader(args.format)
     if args.dataset.name.endswith('.csv'):
         csvfile = TextIOWrapper(args.dataset, 'utf-8')
-        return reader.load_csv(csvfile)
+        records, n_state = reader.load_csv(csvfile)
     elif args.dataset.name.endswith('.xlsx'):
-        return reader.load_xls(args.dataset)
-
-    print(f'Unknown file type: {args.dataset.name}, '
-          'please rename its suffix to either .csv or .xlsx.',
-          file=sys.stderr)
-    sys.exit(1)
+        records, n_state = reader.load_xls(args.dataset)
+    else:
+        print(f'Unknown file type: {args.dataset.name}, '
+            'please rename its suffix to either .csv or .xlsx.',
+            file=sys.stderr)
+        sys.exit(1)
+    print(f'{len(records)} inspection records loaded')
+    return records, n_state
 
 
 def build(args: Namespace) -> None:
+    print(' ')
     records, n_state = _get_records(args)
+    print('Training...')
     model, result = build_simple_model(n_state, records)
-    # TODO: formating result
-    print(result)
     if model:
+        print('Done')
+        print(f'  Iterations: {result.nit}')
+        print(f'        Loss: {result.fun}')
+        print(f'  Parameters: {result.x}')
         model.dump(args.model)
         print(f'Model saved as {args.model.name}')
+    else:
+        print('Failed')
+        print(result)
 
 
 def validate(args: Namespace) -> None:

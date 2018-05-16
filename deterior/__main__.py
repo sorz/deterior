@@ -81,7 +81,7 @@ def _get_args() -> Namespace:
     lifecurve.add_argument(
         '-w', '--save-to',
         dest='output',
-        metavar='figure.png',
+        metavar='output.png',
         type=FileType('wb'),
         help='save figure as image file instead of showing on pop-up window'
     )

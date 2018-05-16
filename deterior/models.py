@@ -53,6 +53,7 @@ class Model:
         obj = {
             '_note': f'Model dumped by Deterior v{version}',
             '_saved_at': datetime.now().isoformat(),
+            'type': f'{type(self).__name__}',
             'n_state': self.n_state,
             'transition_matrix': mat,
         }
