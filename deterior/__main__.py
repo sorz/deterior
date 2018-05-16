@@ -75,7 +75,7 @@ def _get_args() -> Namespace:
     )
     lifecurve.add_argument(
         '--step',
-        metavar='S', type=int, default=0,
+        metavar='S', type=int, default=1,
         help='time step, the time interval between two simulations'
     )
     lifecurve.add_argument(
