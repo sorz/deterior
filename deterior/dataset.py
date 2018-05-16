@@ -1,7 +1,7 @@
 from collections import namedtuple, defaultdict
 from csv import DictReader
 from datetime import datetime
-from typing import TextIO, BinaryIO
+from typing import TextIO, BinaryIO, Dict, Set
 from configparser import ConfigParser
 import sys
 from openpyxl import load_workbook
@@ -21,7 +21,8 @@ class DataSetReader:
             'State': {'column': 'State'},
             'Time': {
                 'column': 'Time',
-                'format': '%Y-%m-%d'
+                'format': '%Y-%m-%d',
+                'unit': '1d',
             },
         })
         if config is not None:
@@ -30,6 +31,7 @@ class DataSetReader:
         self.col_state = cfg['State']['column']
         self.col_time = cfg['Time']['column']
         self.time_format = cfg['Time']['format']
+        self.time_unit = _time_unit_to_days(cfg['Time']['unit'])
 
     def _load(self, rows) -> ([Record], int):
         inpsects = []
@@ -43,7 +45,7 @@ class DataSetReader:
             if isinstance(date, str):
                 date = datetime.strptime(date, self.time_format)
             inpsects.append(Inspect(sid, state, date))
-        return _inpsects_to_records(inpsects)
+        return self._inpsects_to_records(inpsects)
 
     def load_csv(self, csvfile: TextIO) -> ([Record], int):
         csv = DictReader(csvfile)
@@ -82,31 +84,52 @@ class DataSetReader:
         )
         return self._load(rows)
 
+    def _inpsects_to_records(self, inspects: [Inspect]) -> ([Record], int):
+        """Return list of records and the total number of states."""
+        states = set()
+        id_inspects = defaultdict(list)
+        for sid, state, date in inspects:
+            states.add(state)
+            id_inspects[sid].append((state, date))
+        states = _map_states(states)
+        print(f'Found {len(states)} states in total')
 
-def _inpsects_to_records(inspects: [Inspect]) -> ([Record], int):
-    """Return list of records and the total number of states."""
-    states = set()
-    id_inspects = defaultdict(list)
-    for sid, state, date in inspects:
-        states.add(state)
-        id_inspects[sid].append((state, date))
+        records = []
+        for states_dates in id_inspects.values():
+            if len(states_dates) < 2:
+                continue
+            states_dates = sorted(states_dates)
+            for i in range(len(states_dates) - 1):
+                (s0, t0), (s1, t1) = states_dates[i], states_dates[i+1]
+                time = round((t1 - t0).days / self.time_unit)
+                if time <= 0:
+                    continue
+                records.append(Record(states[s0], states[s1], time))
+        return records, len(states)
 
+
+def _map_states(states: Set[str]) -> Dict[str, int]:
+    """Map a set of string to numerical states."""
     states = sorted(states)
     smap = {s: n for n, s in enumerate(states)}
     for state in states:
         if state != str(smap[state]):
             print(f'Mapping state "{state}" to S{smap[state]}')
-    print(f'Found {len(smap)} states in total')
+    return smap
 
-    records = []
-    for states_dates in id_inspects.values():
-        if len(states_dates) < 2:
-            continue
-        states_dates = sorted(states_dates)
-        for i in range(len(states_dates) - 1):
-            (s0, t0), (s1, t1) = states_dates[i], states_dates[i+1]
-            days = (t1 - t0).days
-            if days <= 0:
-                continue
-            records.append(Record(smap[s0], smap[s1], days))
-    return records, len(states)
+
+def _time_unit_to_days(time_unit: str) -> int:
+    """Convert "N" to N, "Nd" to N, "Nm" to N * 30, and "Ny" to N * 365.
+    """
+    if time_unit.isdigit():
+        return int(time_unit)
+    unit = time_unit[-1].lower()
+    num = time_unit[:-1]
+    if not num.isdigit() or unit not in 'dmy':
+        raise ValueError(f'Time unit "{time_unit}" must be "[0-9]+[dmy]?"')
+    num = int(num)
+    if unit == 'm':
+        num *= 30
+    elif unit == 'y':
+        num *= 365
+    return num
