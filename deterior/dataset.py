@@ -36,6 +36,7 @@ class DataSetReader:
     """
     def __init__(self, config: TextIO = None) -> None:
         cfg = ConfigParser(interpolation=None)
+        cfg.optionxform = str  # make it case sensitive
         cfg.read_dict({
             'ID': {'column': 'ID'},
             'State': {'column': 'State'},
@@ -44,6 +45,7 @@ class DataSetReader:
                 'format': '%Y-%m-%d',
                 'unit': '1d',
             },
+            'Filters': {},
         })
         if config is not None:
             cfg.read_file(config)
@@ -52,6 +54,13 @@ class DataSetReader:
         self.col_time = cfg['Time']['column']
         self.time_format = cfg['Time']['format']
         self.time_unit = _time_unit_to_days(cfg['Time']['unit'])
+        self.filters = {}
+        for key, value in cfg.items('Filters'):
+            values = [v for v in value.split('\n') if v]
+            if values:
+                self.filters[key] = values
+        if self.filters:
+            print('Use filters:', self.filters)
 
     def _load(self, rows) -> ([Record], int):
         inpsects = []
@@ -59,6 +68,9 @@ class DataSetReader:
             sid = row.get(self.col_id)
             state = row.get(self.col_state)
             date = row.get(self.col_time)
+            if any(str(row.get(key)) not in values
+                   for key, values in self.filters.items()):
+                continue
             if not sid:
                 raise ValueError(f'ID not found in row {rows.line_num}')
             if not state or not date:

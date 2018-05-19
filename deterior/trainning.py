@@ -26,7 +26,7 @@ def build_simple_model(n_state: int, records: [Record]):
         return np.sum(diff ** 2)
 
     n_params = n_state - 1
-    init = np.array([0.9] * n_params)
+    init = np.array([0.1] * n_params)
     bounds = [(0, 1)] * n_params
     result = optimize.minimize(loss, init, bounds=bounds)
     if result.fun > 1:
