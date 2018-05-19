@@ -1,4 +1,4 @@
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, OrderedDict
 from csv import DictReader
 from datetime import datetime
 from typing import TextIO, BinaryIO, Dict, Set
@@ -9,6 +9,26 @@ from openpyxl import load_workbook
 
 Record = namedtuple('Record', ['s0', 's1', 't'])
 Inspect = namedtuple('Inspect', ['id', 'state', 'date'])
+
+
+class ExcelReader:
+    """Like csv.DictReader, but read MS Excel file.
+    """
+    def __init__(self, xlsfile: BinaryIO):
+        book = load_workbook(xlsfile, read_only=True)
+        self.sheet = book.worksheets[0]  # use the first sheet only
+        self.fieldnames = [n.value.strip() for n in self.sheet[1]]
+        self.line_num = 1
+        self._rows = self.sheet.iter_rows(min_row=2)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.line_num += 1
+        row = next(self._rows)
+        row = [c.value for c in row]
+        return OrderedDict(zip(self.fieldnames, row))
 
 
 class DataSetReader:
@@ -35,11 +55,14 @@ class DataSetReader:
 
     def _load(self, rows) -> ([Record], int):
         inpsects = []
-        for n, (sid, state, date) in enumerate(rows):
+        for row in rows:
+            sid = row.get(self.col_id)
+            state = row.get(self.col_state)
+            date = row.get(self.col_time)
             if not sid:
-                raise ValueError(f'blank ID in row {n + 2}')
+                raise ValueError(f'ID not found in row {rows.line_num}')
             if not state or not date:
-                print(f'In row {n + 2}, {sid} '
+                print(f'In row {rows.line_num}, {sid} '
                       'has blank state or time, ignored.', file=sys.stderr)
                 continue
             if isinstance(date, str):
@@ -49,40 +72,11 @@ class DataSetReader:
 
     def load_csv(self, csvfile: TextIO) -> ([Record], int):
         csv = DictReader(csvfile)
-        rows = (
-            (
-                row[self.col_id],
-                row[self.col_state],
-                row[self.col_time],
-            ) for row in csv
-        )
-        return self._load(rows)
+        return self._load(csv)
 
     def load_xls(self, xlsfile: BinaryIO) -> ([Record], int):
-        book = load_workbook(xlsfile, read_only=True)
-        sheet = book.worksheets[0]  # use the first sheet only
-        header = sheet[1]
-
-        col_id, col_state, col_time = [None] * 3
-        for i, col in enumerate(header):
-            value = col.value.strip()
-            if value == self.col_id:
-                col_id = i
-            elif value == self.col_state:
-                col_state = i
-            elif value == self.col_time:
-                col_time = i
-        if None in (col_id, col_state, col_time):
-            raise ValueError('Missing column in dataset file')
-
-        rows = (
-            (
-                row[col_id].value,
-                row[col_state].value,
-                row[col_time].value,
-            ) for row in sheet.iter_rows(min_row=2)
-        )
-        return self._load(rows)
+        xls = ExcelReader(xlsfile)
+        return self._load(xls)
 
     def _inpsects_to_records(self, inspects: [Inspect]) -> ([Record], int):
         """Return list of records and the total number of states."""
