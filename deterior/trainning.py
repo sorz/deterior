@@ -1,4 +1,5 @@
 from collections import defaultdict
+import sys
 import numpy as np
 from scipy import optimize
 
@@ -25,9 +26,13 @@ def build_simple_model(n_state: int, records: [Record]):
         return np.sum(diff ** 2)
 
     n_params = n_state - 1
-    init = np.array([0.5] * n_params)
+    init = np.array([0.9] * n_params)
     bounds = [(0, 1)] * n_params
     result = optimize.minimize(loss, init, bounds=bounds)
+    if result.fun > 1:
+        print(f'Loss {result.fun} too large, '
+              'use differential evolution', file=sys.stderr)
+        result = optimize.differential_evolution(loss, bounds)
     if not result.success:
         return None, result
     return SimpleModel(result.x), result

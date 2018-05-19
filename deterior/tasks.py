@@ -17,8 +17,8 @@ def _get_records(args) -> ([Record], int):
         records, n_state = reader.load_xls(args.dataset)
     else:
         print(f'Unknown file type: {args.dataset.name}, '
-            'please rename its suffix to either .csv or .xlsx.',
-            file=sys.stderr)
+              'please rename its suffix to either .csv or .xlsx.',
+              file=sys.stderr)
         sys.exit(1)
     print(f'{len(records)} inspection records loaded')
     return records, n_state
@@ -37,7 +37,7 @@ def build(args: Namespace) -> None:
         model.dump(args.model)
         print(f'Model saved as {args.model.name}')
     else:
-        print('Failed')
+        print('Failed:', result.message)
         print(result)
 
 
