@@ -1,15 +1,15 @@
-from collections import defaultdict
 import sys
-import numpy as np
+from collections import defaultdict
 from scipy import optimize
+import numpy as np
 
-from .models import SimpleModel, Model, TimeStates
+from .models import SimpleModel, TimeStates
 from .dataset import Record
 
 
-def _prepare_validate(n_state: int, records: [Record]) \
+def prepare_validate(n_state: int, records: [Record]) \
         -> (TimeStates, np.ndarray):
-    """Return (time_states, final_states)."""
+    """Convert records to (time_states, final_states)."""
     time_states = defaultdict(lambda: np.zeros([n_state]))
     final_states = np.zeros([n_state])
     for s0, s1, t in records:
@@ -17,8 +17,9 @@ def _prepare_validate(n_state: int, records: [Record]) \
         final_states[s1] += 1
     return time_states, final_states
 
+
 def build_simple_model(n_state: int, records: [Record]):
-    time_states, final_states = _prepare_validate(n_state, records)
+    time_states, final_states = prepare_validate(n_state, records)
     def loss(param):
         model = SimpleModel(param)
         expect = model.simulate(time_states)
@@ -36,18 +37,3 @@ def build_simple_model(n_state: int, records: [Record]):
     if not result.success:
         return None, result
     return SimpleModel(result.x), result
-
-
-def validate_model(model: Model, records: [Record]):
-    time_states, final_states = _prepare_validate(model.n_state, records)
-    expect = model.simulate(time_states)
-    diff = final_states - expect
-    var = np.sum(diff ** 2)
-    std = np.sqrt(var)
-    err = std / np.sum(expect) * 100
-    np.set_printoptions(precision=2)
-    print(f"Exception: {expect}")
-    print(f"Actual:    {final_states}")
-    print(f"Variance:  {var:.3f}")
-    print(f"StdDev:    {std:.3f}")
-    print(f"Error:     {err:.3f}%")

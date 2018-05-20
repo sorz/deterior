@@ -53,6 +53,18 @@ def _get_args() -> Namespace:
     validate.add_argument('model', **model)
     validate.add_argument('dataset', **dataset)
 
+    cross = subparsers.add_parser(
+        'cross',
+        help='Do k-fold cross-validation on inspection records'
+    )
+    cross.add_argument(
+        '-k',
+        metavar='K', type=int, default=5,
+        help='the number of subsamples in k-fold cross-validation, '
+             'default to 5.'
+    )
+    cross.add_argument('dataset', **dataset)
+
     lifecurve = subparsers.add_parser(
         'lifecurve',
         help='plot life curve for a given model',

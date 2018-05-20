@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 
 from .models import Model
 from .dataset import DataSetReader, Record
-from .trainning import build_simple_model, validate_model
+from .trainning import build_simple_model
+from .evaluation import validate_model, corss_validate
 
 
 def _get_records(args) -> ([Record], int):
@@ -25,7 +26,8 @@ def _get_records(args) -> ([Record], int):
 
 
 def build(args: Namespace) -> None:
-    print(' ')
+    """Build task. Tranining model with records and save the model.
+    """
     records, n_state = _get_records(args)
     print('Training...')
     model, result = build_simple_model(n_state, records)
@@ -41,7 +43,18 @@ def build(args: Namespace) -> None:
         print(result)
 
 
+def cross(args: Namespace) -> None:
+    """Corss task. Corss validate model on given dataset."""
+    records, n_state = _get_records(args)
+    result = corss_validate(n_state, records, args.k)
+    print(f"Mean Variance: {result.var:.3f}")
+    print(f"Mean StdDev:   {result.std:.3f}")
+    print(f"Mean Error:    {result.err:.3f}%")
+
+
 def validate(args: Namespace) -> None:
+    """Validate task. Compare output of given model and dataset.
+    """
     # TODO: handle load error
     records, n_state = _get_records(args)
     model = Model.load(args.model)
@@ -49,10 +62,17 @@ def validate(args: Namespace) -> None:
         print(f'Cannot verify {model.n_state}-state model on {n_state}-state '
               'dataset.', file=sys.stderr)
         sys.exit(1)
-    validate_model(model, records)
+    result = validate_model(model, records)
+    print(f"Exception: {result.expect}")
+    print(f"Actual:    {result.actual}")
+    print(f"Variance:  {result.var:.3f}")
+    print(f"StdDev:    {result.std:.3f}")
+    print(f"Error:     {result.err:.3f}%")
 
 
 def lifecurve(args: Namespace) -> None:
+    """Lifecurve task. Plot the life curve for given model.
+    """
     model = Model.load(args.model)
     curve = model.simulate_curve(
         args.state, args.start, args.stop, args.step
