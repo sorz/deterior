@@ -1,4 +1,5 @@
 import json
+from csv import DictWriter
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, TextIO
@@ -42,6 +43,19 @@ class Model:
             exps[i] = init * mat
             mat *= self.mat ** step
         return exps
+
+
+    def to_csv(self, csvfile: TextIO) -> None:
+        """Write internal transition matrix to CSV file"""
+        fieldnames = ['Init State'] + [f'S{i}' for i in range(self.n_state)]
+        csv = DictWriter(csvfile, fieldnames)
+        csv.writeheader()
+        for i in range(self.n_state):
+            row = {'Init State': f'S{i}'}
+            for j in range(self.n_state):
+                row[f'S{j}'] = self.mat[i, j]
+            csv.writerow(row)
+
 
     def dump(self, fp: TextIO) -> None:
         """Dump the model into file-like object `fp`"""

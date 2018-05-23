@@ -36,7 +36,10 @@ def build(args: Namespace) -> None:
         print(f'  Iterations: {result.nit}')
         print(f'        Loss: {result.fun}')
         print(f'  Parameters: {result.x}')
-        model.dump(args.model)
+        if args.output_type == 'json':
+            model.dump(args.model)
+        elif args.output_type == 'csv':
+            model.to_csv(args.model)
         print(f'Model saved as {args.model.name}')
     else:
         print('Failed:', result.message)

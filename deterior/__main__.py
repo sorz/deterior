@@ -44,6 +44,14 @@ def _get_args() -> Namespace:
         type=FileType('w', encoding='utf-8'),
         help='where to save the model'
     )
+    build.add_argument(
+        '-t', '--output-type',
+        choices=['json', 'csv'],
+        default='json',
+        help='format of output model file. "json" can be used on other '
+             'tasks later, whereas "csv" is output-only human-readable '
+             'format.'
+    )
 
     validate = subparsers.add_parser(
         'validate',
@@ -55,7 +63,7 @@ def _get_args() -> Namespace:
 
     cross = subparsers.add_parser(
         'cross',
-        help='Do k-fold cross-validation on inspection records'
+        help='k-fold cross-validation on inspection records'
     )
     cross.add_argument(
         '-k',
