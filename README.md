@@ -32,3 +32,12 @@ If the system cannot find `deterior` command, you can also use:
 ```
 python3 -m deterior --help
 ```
+
+
+## License
+This software is licensed under
+
+- CC BY 4.0 International 
+- MIT License
+
+This code is allowed to be adapted, shared and allowed for commercial uses.
