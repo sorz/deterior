@@ -5,7 +5,7 @@ import numpy as np
 
 from .models import Model
 from .dataset import Record
-from .trainning import prepare_validate, build_simple_model
+from .training import prepare_validate, build_simple_model
 
 
 Result = namedtuple('Reulst', ['expect', 'actual', 'var', 'std', 'err'])

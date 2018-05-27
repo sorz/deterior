@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from .models import Model
 from .dataset import DataSetReader, Record
-from .trainning import build_simple_model
+from .training import build_simple_model
 from .evaluation import validate_model, corss_validate
 
 
