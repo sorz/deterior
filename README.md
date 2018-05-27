@@ -1,5 +1,7 @@
 # Deterior
-Equipment Deterioration Modeling Tools
+A Markov chain-based infrastructure asset deterioration modelling tools.
+
+This is one part of outcome in the course _COMP90055 Computing Project_.
 
 ## Install
 
