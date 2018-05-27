@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from .models import Model
 from .dataset import DataSetReader, Record
 from .training import build_simple_model
-from .evaluation import validate_model, corss_validate
+from .evaluation import validate_model, cross_validate
 
 
 def _get_records(args) -> ([Record], int):
@@ -49,7 +49,7 @@ def build(args: Namespace) -> None:
 def cross(args: Namespace) -> None:
     """Corss task. Corss validate model on given dataset."""
     records, n_state = _get_records(args)
-    result = corss_validate(n_state, records, args.k)
+    result = cross_validate(n_state, records, args.k)
     print(f"Mean Variance: {result.var:.3f}")
     print(f"Mean StdDev:   {result.std:.3f}")
     print(f"Mean Error:    {result.err:.3f}%")

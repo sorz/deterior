@@ -28,7 +28,7 @@ def _split(l, k) -> [[Record]]:
         yield l[i:i + n]
 
 
-def corss_validate(n_state: int, records: [Record], k: int) -> Result:
+def cross_validate(n_state: int, records: [Record], k: int) -> Result:
     np.random.shuffle(records)
     folds = list(_split(records, k))
     k = len(folds)
