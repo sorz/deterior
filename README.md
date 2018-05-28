@@ -35,6 +35,48 @@ If the system cannot find `deterior` command, you can also use:
 python3 -m deterior --help
 ```
 
+## Usages
+
+### Format of input dataset
+Input inspection records is a table in either CSV (`.csv`) or MS Excel (`.xlsx`)
+files. Table must contains a heading line as the first row of file. For Excel,
+only the first Worksheet is used.
+
+The table must contains these 3 columns: `ID`, `State`, and `Time`. It may
+contains other unrelated columns that will be ignored.
+
+Each row in the table record one inspection action for one asset.
+- `ID` is any string that can uniquely identify the asset being inspected.
+- `Time` contains inspection date, default format is `YYYY-MM-DD`.
+- `State` is a number or string represents the state of asset in this
+  inspection.
+
+The names of columns and format of date can be configured, see `footpath.ini`
+for a example.
+
+### Training
+
+To training the models, use following command:
+```bash
+deterior build input.csv output.json
+```
+
+`input.csv` is the input dataset, the trained model will be saved as
+`output.json` file, which can be used by this program with other tasks.
+
+If you prefer to export internal _transition matrix_ of model to a CSV file,
+`-t csv` argument can be use. For example,
+```bash
+deterior build input.csv -t csv output.csv
+```
+
+The outputted transition matrix is a table, where the number in *i*-row *j*-column
+cell is the probability changing from state-*i* to state-*j*.
+
+However, this is a export-only format, which cannot be use in this program.
+
+
+
 ## Acknowledgements
 
 This software uses following libraries:
