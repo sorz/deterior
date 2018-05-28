@@ -78,15 +78,19 @@ However, this is a export-only format, which cannot be use in this program again
 ### Life curves
 
 To plot life curve for a given model, use
-```
+```bash
 deterior lifecurve --state 0 --from 0 --to 200 model.json
 ```
 - `--state 0` specify the initial state in the beginning of simulation, default
   to `0`.
 - `--from 0` specify the start time of the curve, default to `0`.
-- `--to 0` specify the end time of the curve.
+- `--to 200` specify the end time of the curve.
 - `model.json` is the model to simulate. It is produced by `train` command of
-  this program. 
+  this program.
+
+The unit of time here is depended on the model. In current implementation, it
+defaults to one day, and can only be changed during training, by specified on
+the configure file.
 
 This command will simulate deterioration process of the model, then pop up a
 window showing the life curve. If you run it without a GUI environment,
@@ -103,6 +107,16 @@ deterior validate model.json dataset.csv
 - `dataset.csv` is the test data. Its format is the same as training.
 
 It will output variance, error rate and other information.
+
+### k-fold cross-validation
+To test whether the Markov chain model is suitable for your dataset, the
+built-in cross-validation is for your convenience.
+
+For example, to run a 4-fold cross-validation on `dataset.csv`, run:
+```bash
+deterior cross -k 4 dataset.csv
+```
+It will print results after test.
 
 ## Acknowledgements
 
