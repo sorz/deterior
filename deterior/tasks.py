@@ -77,6 +77,7 @@ def lifecurve(args: Namespace) -> None:
     """Lifecurve task. Plot the life curve for given model.
     """
     model = Model.load(args.model)
+    print('Model loaded, waiting...')
     curve = model.simulate_curve(
         args.state, args.start, args.stop, args.step
     )
