@@ -1,3 +1,8 @@
+"""training module of deterior
+
+This module provides methods to train the modules, and helper methods
+to prepare data using in training.
+"""
 import sys
 from collections import defaultdict
 from scipy import optimize
@@ -19,6 +24,9 @@ def prepare_validate(n_state: int, records: [Record]) \
 
 
 def build_simple_model(n_state: int, records: [Record]):
+    """Train the SimpleModel using inspection records.
+    Return trained model and the result returned from optimiser.
+    """
     time_states, final_states = prepare_validate(n_state, records)
     def loss(param):
         model = SimpleModel(param)

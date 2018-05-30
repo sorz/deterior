@@ -1,3 +1,7 @@
+"""Entry of deterior
+
+Parsing command line arguments and pass them to `tasks` modules.
+"""
 from argparse import ArgumentParser, FileType, Namespace
 import sys
 
@@ -6,7 +10,7 @@ from . import tasks
 
 def _get_args() -> Namespace:
     parser = ArgumentParser(
-        description='Deterior - Equipment Deterioration Modeling Tools'
+        description='Deterior - Asset Deterioration Modeling Tools'
     )
     parser.add_argument(
         '-f', '--dataset-format',

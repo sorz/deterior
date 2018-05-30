@@ -1,3 +1,8 @@
+"""The evaluation module of deterior
+
+This module provides methods to validate a trained models and
+cross-validate models on given dataset.
+"""
 from itertools import chain
 from collections import namedtuple
 import sys

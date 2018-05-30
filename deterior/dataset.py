@@ -1,3 +1,8 @@
+"""The dataset module of deterior
+
+This module is used to read inspection records from files.
+Pro-processing of data is also done here.
+"""
 from collections import namedtuple, defaultdict, OrderedDict
 from csv import DictReader
 from datetime import datetime
@@ -63,6 +68,7 @@ class DataSetReader:
             print('Use filters:', self.filters)
 
     def _load(self, rows) -> ([Record], int):
+        """Read records from a iterator of rows."""
         inpsects = []
         for row in rows:
             sid = row.get(self.col_id)
@@ -83,10 +89,12 @@ class DataSetReader:
         return self._inpsects_to_records(inpsects)
 
     def load_csv(self, csvfile: TextIO) -> ([Record], int):
+        """Read records from CSV file"""
         csv = DictReader(csvfile)
         return self._load(csv)
 
     def load_xls(self, xlsfile: BinaryIO) -> ([Record], int):
+        """Read records from Excel file"""
         xls = ExcelReader(xlsfile)
         return self._load(xls)
 

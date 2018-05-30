@@ -1,3 +1,11 @@
+"""task module of deterior
+
+A "task" is a sub-command that user may invoke.
+Each task contains a sequance of I/O operations and computations.
+
+This module contains all the tasks.
+It's the actual entry of deterior.
+"""
 from io import TextIOWrapper
 from argparse import Namespace
 import sys

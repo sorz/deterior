@@ -1,3 +1,10 @@
+"""The models module of deterior
+
+This module provides deterioration models as classes, which
+implemented save/load operation, and simulation used by training
+and life curves. But the actual training process is done by the
+`training` module.
+"""
 import json
 from csv import DictWriter
 from collections import defaultdict
@@ -11,6 +18,11 @@ from . import __version__ as version
 TimeStates =  Dict[int, np.ndarray]
 
 class Model:
+    """The generic Markov chain model.
+
+    self.mat: transition/probability matrix, the core of model.
+    self.n_state: the total number of states.
+    """
     def __init__(self, prob_matrix: np.matrix) -> None:
         """Build a model by given probability matrix.
         """
@@ -34,6 +46,8 @@ class Model:
     def simulate_curve(self,
                        init_state: int,
                        start: int, stop: int, step: int) -> np.ndarray:
+        """Used to generate life curve. Given initial state, start time,
+        stop time, and time step, return estimated probabilities."""
         mat = self.mat ** start
         init = np.zeros(self.n_state)
         init[init_state] = 1
@@ -86,6 +100,11 @@ class Model:
 
 
 class SimpleModel(Model):
+    """The simple Markov chain model.
+
+    In each step, the deterioration state is either keep no change or change
+    to the next level. It can't become better or worse more than one level.
+    """
 
     def __init__(self, probs) -> None:
         """Build a n-state model by given parameters.
